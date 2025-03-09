@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasiac Timer</title>
+    <style>
+        :root {
+            --background-color: #e6f7e9;
+            --start-button-color: #d9b6d0;
+            --stop-button-color: #a6c8e4;
+            --reset-button-color: #b6deb6;
+            --text-color: #111;
+            --accent-color: #444;
+            --alert-color: #ff5252;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            transition: background-color 0.5s ease;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        .time-display {
+            font-size: 5rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            color: var(--text-color);
+            text-align: center;
+            position: relative;
+            transform-origin: center;
+            transition: all 0.3s ease;
+        }
+
+        .time-display.pulse {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+                color: var(--alert-color);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex: 1;
+            max-width: 220px;
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1),
+                inset 0 -2px 5px rgba(0, 0, 0, 0.1),
+                inset 0 2px 5px rgba(255, 255, 255, 0.5);
+            transform: translateY(0);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15),
+                inset 0 -2px 5px rgba(0, 0, 0, 0.1),
+                inset 0 2px 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn:active,
+        .btn.pressed {
+            transform: translateY(2px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2),
+                inset 0 2px 5px rgba(0, 0, 0, 0.1),
+                inset 0 -1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-start {
+            background-color: var(--start-button-color);
+        }
+
+        .btn-stop {
+            background-color: var(--stop-button-color);
+        }
+
+        .btn-reset {
+            background-color: var(--reset-button-color);
+            width: 100%;
+            max-width: 100%;
+            margin-top: 1rem;
+        }
+
+        .separator {
+            width: 100%;
+            height: 1px;
+            background-color: var(--accent-color);
+            margin: 1rem 0;
+        }
+
+        .time-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .time-input input {
+            width: 70px;
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--accent-color);
+            border-radius: 4px;
+            font-size: 1.2rem;
+            background-color: transparent;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .time-input input:focus {
+            outline: none;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+                0 0 0 2px rgba(166, 200, 228, 0.5);
+        }
+
+        .time-input label {
+            display: block;
+            text-align: center;
+            margin-top: 0.3rem;
+            font-size: 0.8rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 1rem;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress {
+            height: 100%;
+            width: 0;
+            background-color: var(--accent-color);
+            transition: width 0.3s linear;
+        }
+
+        @media (max-width: 480px) {
+            .time-display {
+                font-size: 3.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .input-group {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Классы анимаций */
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-5px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* Анимация оповещения, когда время истекает */
+        .alert-mode {
+            animation: alertBg 2s infinite;
+        }
+
+        @keyframes alertBg {
+
+            0%,
+            100% {
+                background-color: var(--background-color);
+            }
+
+            50% {
+                background-color: rgba(255, 82, 82, 0.1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container fade-in">
+        <div class="time-display" id="timer">0:0:0</div>
+
+        <div class="controls">
+            <button class="btn btn-start" id="startBtn">Старт</button>
+            <button class="btn btn-stop" id="stopBtn">Стоп</button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="separator"></div>
+
+        <button class="btn btn-reset" id="resetBtn">Перезапуск</button>
+
+        <div class="time-input fade-in">
+            <div class="input-group">
+                <div>
+                    <input type="number" id="hoursInput" min="0" max="99" value="0">
+                    <label>Часы</label>
+                </div>
+                <div>
+                    <input type="number" id="minutesInput" min="0" max="59" value="0">
+                    <label>Минуты</label>
+                </div>
+                <div>
+                    <input type="number" id="secondsInput" min="0" max="59" value="0">
+                    <label>Секунды</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Элементы
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const hoursInput = document.getElementById('hoursInput');
+        const minutesInput = document.getElementById('minutesInput');
+        const secondsInput = document.getElementById('secondsInput');
+        const progressBar = document.getElementById('progress');
+        const body = document.body;
+
+        // Переменные таймера
+        let interval;
+        let timeRemaining = 0;
+        let totalTime = 0;
+        let isRunning = false;
+        let lastTickTime = 0;
+
+        // Инициализировать таймер
+        updateDisplay(0);
+
+        // Слушатели событий
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // Эффект нажатия кнопки
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('mousedown', function () {
+                this.classList.add('pressed');
+            });
+
+            // Удалить нажатый класс при наведении курсора мыши в любом месте документа.
+            document.addEventListener('mouseup', function () {
+                btn.classList.remove('pressed');
+            });
+
+            // Удалить нажатый класс, когда мышь покидает кнопку
+            btn.addEventListener('mouseleave', function () {
+                this.classList.remove('pressed');
+            });
+
+            // Для сенсорных устройств
+            btn.addEventListener('touchstart', function (e) {
+                e.preventDefault();
+                this.classList.add('pressed');
+            });
+
+            btn.addEventListener('touchend', function () {
+                this.classList.remove('pressed');
+            });
+
+            btn.addEventListener('touchcancel', function () {
+                this.classList.remove('pressed');
+            });
+        });
+
+        function startTimer() {
+            if (isRunning) return;
+
+            // Получить время ввода, если таймер не работает
+            if (timeRemaining <= 0) {
+                const hours = parseInt(hoursInput.value) || 0;
+                const minutes = parseInt(minutesInput.value) || 0;
+                const seconds = parseInt(secondsInput.value) || 0;
+
+                timeRemaining = (hours * 3600) + (minutes * 60) + seconds;
+                totalTime = timeRemaining;
+
+                if (timeRemaining <= 0) {
+                    timerDisplay.classList.add('shake');
+                    setTimeout(() => {
+                        timerDisplay.classList.remove('shake');
+                    }, 500);
+                    return;
+                }
+            }
+
+            isRunning = true;
+            startBtn.disabled = true;
+
+            lastTickTime = Date.now();
+            interval = setInterval(updateTimer, 100); // Обновляйтесь чаще для более плавного прогресса.
+
+            // старт анимации
+            timerDisplay.classList.add('fade-in');
+            setTimeout(() => {
+                timerDisplay.classList.remove('fade-in');
+            }, 500);
+        }
+
+        function stopTimer() {
+            if (!isRunning) return;
+
+            clearInterval(interval);
+            isRunning = false;
+            startBtn.disabled = false;
+
+            // стоп анимации
+            timerDisplay.classList.add('shake');
+            setTimeout(() => {
+                timerDisplay.classList.remove('shake');
+            }, 500);
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timeRemaining = 0;
+            updateDisplay(0);
+            progressBar.style.width = '0%';
+
+            // перезапуск ввода
+            hoursInput.value = 0;
+            minutesInput.value = 0;
+            secondsInput.value = 0;
+
+            // Удаление состояний оповещений
+            timerDisplay.classList.remove('pulse');
+            body.classList.remove('alert-mode');
+
+            // Сброс анимации
+            timerDisplay.classList.add('fade-in');
+            setTimeout(() => {
+                timerDisplay.classList.remove('fade-in');
+            }, 500);
+        }
+
+        function updateTimer() {
+            const now = Date.now();
+            const elapsed = (now - lastTickTime) / 1000;
+            lastTickTime = now;
+
+            timeRemaining -= elapsed;
+
+            if (timeRemaining <= 0) {
+                timeRemaining = 0;
+                timerComplete();
+            }
+
+            updateDisplay(timeRemaining);
+            updateProgress();
+            checkAlertThresholds();
+        }
+
+        function updateDisplay(time) {
+            const hours = Math.floor(time / 3600);
+            const minutes = Math.floor((time % 3600) / 60);
+            const seconds = Math.floor(time % 60);
+
+            timerDisplay.textContent = `${hours}:${padZero(minutes)}:${padZero(seconds)}`;
+        }
+
+        function padZero(num) {
+            return num < 10 ? num : num;
+        }
+
+        function updateProgress() {
+            if (totalTime > 0) {
+                const percentage = ((totalTime - timeRemaining) / totalTime) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+        }
+
+        function checkAlertThresholds() {
+            // Для коротких таймеров (< 1 минуты), оповещение через 10 секунд
+            // Для более длительных таймеров оповещение через 1 минуту
+            const isShortTimer = totalTime < 60;
+            const alertThreshold = isShortTimer ? 10 : 60;
+
+            if (timeRemaining <= alertThreshold && timeRemaining > 0) {
+                if (!timerDisplay.classList.contains('pulse')) {
+                    timerDisplay.classList.add('pulse');
+                    body.classList.add('alert-mode');
+                }
+            } else {
+                timerDisplay.classList.remove('pulse');
+                body.classList.remove('alert-mode');
+            }
+        }
+
+        function timerComplete() {
+            stopTimer();
+            timerDisplay.classList.add('pulse');
+            body.classList.add('alert-mode');
+
+            // Дополнительная финальная анимация
+            const endAnimation = () => {
+                timerDisplay.classList.add('fade-in');
+                setTimeout(() => {
+                    timerDisplay.classList.remove('fade-in');
+                    timerDisplay.classList.add('fade-in');
+                    setTimeout(() => {
+                        timerDisplay.classList.remove('fade-in');
+                    }, 500);
+                }, 500);
+            };
+
+            endAnimation();
+
+            // Повторить анимацию несколько раз
+            let count = 0;
+            const repeatInterval = setInterval(() => {
+                count++;
+                if (count >= 3) {
+                    clearInterval(repeatInterval);
+                    return;
+                }
+                endAnimation();
+            }, 1500);
+        }
+    </script>
+</body>
+
+</html>
