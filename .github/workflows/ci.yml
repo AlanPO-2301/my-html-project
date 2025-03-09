@@ -1,0 +1,21 @@
+name: HTML CI/CD
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: echo "No dependencies needed for HTML project"
+
+      - name: Run HTML validation
+        run: echo "Skipping validation, as this is a static HTML project"
